@@ -3,6 +3,9 @@ package com.example.project;
 import com.example.project.domain.UploadFile;
 import com.example.project.repos.UploadFileRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
@@ -42,13 +45,6 @@ public class MonitorController {
         return "file_upload";
     }
 
-    @GetMapping("/{uploadFile}")
-    public String getFile(@PathVariable("uploadFile") String fileName) throws IOException {
-        String filePath = uploadFileRepo.findByFilePathContaining(fileName).get(0).getFilePath();
-        byte[] document = FileCopyUtils.copyToByteArray(new File(filePath));
-        return "redirect:/file";
-    }
-
     @GetMapping("/file")
     public String getFile(Map<String, Object> model) {
         String filePath = uploadFileRepo.findAll().iterator().next().getFilePath();
@@ -59,5 +55,16 @@ public class MonitorController {
     @GetMapping("/")
     public String home() {
         return "home";
+    }
+
+    @GetMapping("/{uploadFile}")
+    public HttpEntity<byte[]> uploadFile(@PathVariable("uploadFile") String fileName) throws IOException {
+        String filePath = uploadFileRepo.findByFilePathContaining(fileName).get(0).getFilePath();
+        byte[] document = FileCopyUtils.copyToByteArray(new File(filePath));
+        HttpHeaders header = new HttpHeaders();
+        header.setContentType(new MediaType("application", "pdf"));
+        header.set("Content-Disposition", "inline; filename=" + fileName);
+        header.setContentLength(document.length);
+        return new HttpEntity<byte[]>(document, header);
     }
 }
