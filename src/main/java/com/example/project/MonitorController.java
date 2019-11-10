@@ -28,7 +28,7 @@ public class MonitorController {
     @Autowired
     private UploadFileRepo uploadFileRepo;
 
-    private static String uploadDirectory = System.getProperty("user.dir")+"\\src\\main\\resources\\static\\files";
+    private static String uploadDirectory = System.getProperty("user.dir") + "/src/main/resources/static/files";
 
     @PostMapping("/upload")
     public String uploading(@RequestParam(name="files") MultipartFile file, Map<String, Object> model) {
