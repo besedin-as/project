@@ -2,12 +2,7 @@ package com.example.project;
 
 import com.example.project.domain.UploadFile;
 import com.example.project.repos.UploadFileRepo;
-import org.apache.logging.log4j.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,21 +43,21 @@ public class MonitorController {
     }
 
     @GetMapping("/{uploadFile}")
-    public HttpEntity<byte[]> getFile(@PathVariable("uploadFile") String fileName) throws IOException {
+    public String getFile(@PathVariable("uploadFile") String fileName) throws IOException {
         String filePath = uploadFileRepo.findByFilePathContaining(fileName).get(0).getFilePath();
         byte[] document = FileCopyUtils.copyToByteArray(new File(filePath));
-        HttpHeaders header = new HttpHeaders();
-        header.setContentType(new MediaType("application", "pdf"));
-        header.set("Content-Disposition", "inline; filename=" + fileName);
-        header.setContentLength(document.length);
-        return new HttpEntity<byte[]>(document, header);
+        return "redirect:/file";
+    }
+
+    @GetMapping("/file")
+    public String getFile(Map<String, Object> model) {
+        String filePath = uploadFileRepo.findAll().iterator().next().getFilePath();
+        model.put("fileName", filePath.substring(filePath.lastIndexOf("\\") + 1));
+        return "file";
     }
 
     @GetMapping("/")
-    public String getFile() throws IOException, URISyntaxException {
-        String filePath = uploadFileRepo.findAll().iterator().next().getFilePath();
-//        return "redirect:/"+filePath.substring(filePath.lastIndexOf("\\")+1);
-        return "monitor";
+    public String home() {
+        return "home";
     }
-
 }
