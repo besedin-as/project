@@ -48,7 +48,7 @@ public class MonitorController {
     @GetMapping("/file")
     public String getFile(Map<String, Object> model) {
         String filePath = uploadFileRepo.findAll().iterator().next().getFilePath();
-        model.put("fileName", filePath.substring(filePath.lastIndexOf("\\") + 1));
+        model.put("fileName", filePath.substring(filePath.lastIndexOf("/") + 1));
         return "file";
     }
 
