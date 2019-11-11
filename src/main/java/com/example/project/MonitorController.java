@@ -37,7 +37,7 @@ public class MonitorController {
         UploadFile uploadFile = new UploadFile(fileNameAndPath.toAbsolutePath().toString());
         uploadFileRepo.deleteAll();
         uploadFileRepo.save(uploadFile);
-        return "redirect:/"+file.getOriginalFilename();
+        return "redirect:/file";
     }
 
     @GetMapping("/upload")
@@ -57,7 +57,7 @@ public class MonitorController {
         return "home";
     }
 
-    @GetMapping("/{uploadFile}")
+    @GetMapping("/resources/{uploadFile}")
     public HttpEntity<byte[]> uploadFile(@PathVariable("uploadFile") String fileName) throws IOException {
         String filePath = uploadFileRepo.findByFilePathContaining(fileName).get(0).getFilePath();
         byte[] document = FileCopyUtils.copyToByteArray(new File(filePath));
