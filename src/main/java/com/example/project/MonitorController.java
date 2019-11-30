@@ -1,18 +1,20 @@
 package com.example.project;
 
-import com.example.project.domain.UploadFile;
-import com.example.project.repos.UploadFileRepo;
+import com.example.project.domain.FilePosition;
+import com.example.project.repos.FilePositionRepo;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.fit.pdfdom.PDFDomTree;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,21 +24,23 @@ import java.util.Map;
 public class MonitorController {
 
     @Autowired
-    private UploadFileRepo uploadFileRepo;
+    private FilePositionRepo filePositionRepo;
 
     private static String uploadDirectory = System.getProperty("user.dir") + "/src/main/resources/static/files";
+    private static String templatesDirectory = System.getProperty("user.dir") + "/src/main/resources/templates";
 
     @PostMapping("/upload")
-    public String uploading(@RequestParam(name="files") MultipartFile file, Map<String, Object> model) {
+    public String uploading(@RequestParam(name="files") MultipartFile file, Map<String, Object> model) throws IOException, ParserConfigurationException {
         Path fileNameAndPath = Paths.get(uploadDirectory, file.getOriginalFilename());
         try {
             Files.write(fileNameAndPath, file.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        UploadFile uploadFile = new UploadFile(fileNameAndPath.toAbsolutePath().toString());
-        uploadFileRepo.deleteAll();
-        uploadFileRepo.save(uploadFile);
+        FilePosition uploadFile = new FilePosition(0, 0);
+        filePositionRepo.deleteAll();
+        filePositionRepo.save(uploadFile);
+//        generateHTMLFromPDF(fileNameAndPath.toString());
         return "redirect:/file";
     }
 
@@ -47,9 +51,22 @@ public class MonitorController {
 
     @GetMapping("/file")
     public String getFile(Map<String, Object> model) {
-        String filePath = uploadFileRepo.findAll().iterator().next().getFilePath();
-        model.put("fileName", filePath.substring(filePath.lastIndexOf("/") + 1));
-        return "file";
+        return "test";
+    }
+
+    @RequestMapping(value = "/file", method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.OK)
+    public void setScrollTop(@RequestParam int scrollTop) {
+        FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
+        uploadFile.setScrollTop(scrollTop);
+        filePositionRepo.save(uploadFile);
+    }
+
+    @RequestMapping(value = "/file/update_position", method = RequestMethod.GET)
+    public ResponseEntity<Integer> getScrollPosition() {
+        FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
+        return ResponseEntity.ok(uploadFile.getScrollTop());
+
     }
 
     @GetMapping("/")
@@ -57,14 +74,11 @@ public class MonitorController {
         return "home";
     }
 
-    @GetMapping("/resources/{uploadFile}")
-    public HttpEntity<byte[]> uploadFile(@PathVariable("uploadFile") String fileName) throws IOException {
-        String filePath = uploadFileRepo.findByFilePathContaining(fileName).get(0).getFilePath();
-        byte[] document = FileCopyUtils.copyToByteArray(new File(filePath));
-        HttpHeaders header = new HttpHeaders();
-        header.setContentType(new MediaType("application", "pdf"));
-        header.set("Content-Disposition", "inline; filename=" + fileName);
-        header.setContentLength(document.length);
-        return new HttpEntity<byte[]>(document, header);
+    private void generateHTMLFromPDF(String filename) throws IOException, ParserConfigurationException {
+        PDDocument pdf = PDDocument.load(new File(filename));
+        Writer output = new PrintWriter(templatesDirectory+"/test.mustache", "utf-8");
+        new PDFDomTree().writeText(pdf, output);
+
+        output.close();
     }
 }
