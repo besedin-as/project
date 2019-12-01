@@ -18,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Stream;
 
 @Controller
@@ -41,7 +40,6 @@ public class MonitorController {
         FilePosition uploadFile = new FilePosition(0, 0);
         filePositionRepo.deleteAll();
         filePositionRepo.save(uploadFile);
-        Random random = new Random();
         generateHTMLFromPDF(fileNameAndPath.toString());
         String text = readLineByLineJava(templatesDirectory + "/test.html");
         text = insert(text);
@@ -53,11 +51,6 @@ public class MonitorController {
     public String home(Map<String, Object> model) {
         return "file_upload";
     }
-
-//    @GetMapping("/file")
-//    public String getFile(Map<String, Object> model) {
-//        return "test";
-//    }
 
     @RequestMapping(value = "/file", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
@@ -138,6 +131,8 @@ public class MonitorController {
                 "    }, 1000);\n" +
                 "});\n" +
                 "</script>\n";
+        String insertText2 = ".page{margin: auto !important;";
+        text = text.replace(".page{", insertText2);
         text = text.replace("</body>", insertText + "</body>");
         return text;
     }
