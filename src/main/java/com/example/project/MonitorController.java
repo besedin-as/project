@@ -7,6 +7,7 @@ import org.fit.pdfdom.PDFDomTree;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,9 +43,9 @@ public class MonitorController {
         filePositionRepo.save(uploadFile);
         Random random = new Random();
         generateHTMLFromPDF(fileNameAndPath.toString());
-        String text = readLineByLineJava(templatesDirectory + "/test.mustache");
+        String text = readLineByLineJava(templatesDirectory + "/test.html");
         text = insert(text);
-        writeToFile(templatesDirectory + "/test.mustache", text);
+        writeToFile(templatesDirectory + "/test.html", text);
         return "redirect:/file";
     }
 
@@ -53,10 +54,10 @@ public class MonitorController {
         return "file_upload";
     }
 
-    @GetMapping("/file")
-    public String getFile(Map<String, Object> model) {
-        return "test";
-    }
+//    @GetMapping("/file")
+//    public String getFile(Map<String, Object> model) {
+//        return "test";
+//    }
 
     @RequestMapping(value = "/file", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
@@ -78,9 +79,19 @@ public class MonitorController {
         return "home";
     }
 
+    @GetMapping("/file")
+    public HttpEntity<byte[]> uploadFile() throws IOException {
+        byte[] document = FileCopyUtils.copyToByteArray(new File(templatesDirectory + "\\test.html"));
+        HttpHeaders header = new HttpHeaders();
+        header.setContentType(new MediaType("text", "html"));
+        header.set("Content-Disposition", "inline; filename=test.html");
+        header.setContentLength(document.length);
+        return new HttpEntity<byte[]>(document, header);
+    }
+
     private void generateHTMLFromPDF(String filename) throws IOException, ParserConfigurationException {
         PDDocument pdf = PDDocument.load(new File(filename));
-        Writer output = new PrintWriter(templatesDirectory + "/test.mustache", "utf-8");
+        Writer output = new PrintWriter(templatesDirectory + "/test.html", "utf-8");
         new PDFDomTree().writeText(pdf, output);
         output.close();
     }
