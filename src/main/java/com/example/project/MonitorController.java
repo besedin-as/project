@@ -81,7 +81,7 @@ public class MonitorController {
 
     @GetMapping("/file")
     public HttpEntity<byte[]> uploadFile() throws IOException {
-        byte[] document = FileCopyUtils.copyToByteArray(new File(templatesDirectory + "\\test.html"));
+        byte[] document = FileCopyUtils.copyToByteArray(new File(templatesDirectory + "/test.html"));
         HttpHeaders header = new HttpHeaders();
         header.setContentType(new MediaType("text", "html"));
         header.set("Content-Disposition", "inline; filename=test.html");
