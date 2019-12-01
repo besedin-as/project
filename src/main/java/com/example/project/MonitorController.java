@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Random;
+import java.util.stream.Stream;
 
 @Controller
 public class MonitorController {
@@ -30,7 +30,7 @@ public class MonitorController {
     private static String templatesDirectory = System.getProperty("user.dir") + "/src/main/resources/templates";
 
     @PostMapping("/upload")
-    public String uploading(@RequestParam(name="files") MultipartFile file, Map<String, Object> model) throws IOException, ParserConfigurationException {
+    public String uploading(@RequestParam(name = "files") MultipartFile file, Map<String, Object> model) throws IOException, ParserConfigurationException {
         Path fileNameAndPath = Paths.get(uploadDirectory, file.getOriginalFilename());
         try {
             Files.write(fileNameAndPath, file.getBytes());
@@ -40,7 +40,11 @@ public class MonitorController {
         FilePosition uploadFile = new FilePosition(0, 0);
         filePositionRepo.deleteAll();
         filePositionRepo.save(uploadFile);
-//        generateHTMLFromPDF(fileNameAndPath.toString());
+        Random random = new Random();
+        generateHTMLFromPDF(fileNameAndPath.toString());
+        String text = readLineByLineJava(templatesDirectory + "/test.mustache");
+        text = insert(text);
+        writeToFile(templatesDirectory + "/test.mustache", text);
         return "redirect:/file";
     }
 
@@ -76,9 +80,61 @@ public class MonitorController {
 
     private void generateHTMLFromPDF(String filename) throws IOException, ParserConfigurationException {
         PDDocument pdf = PDDocument.load(new File(filename));
-        Writer output = new PrintWriter(templatesDirectory+"/test.mustache", "utf-8");
+        Writer output = new PrintWriter(templatesDirectory + "/test.mustache", "utf-8");
         new PDFDomTree().writeText(pdf, output);
-
         output.close();
+    }
+
+    private String readLineByLineJava(String filePath) {
+        StringBuilder contentBuilder = new StringBuilder();
+        try (Stream<String> stream = Files.lines(Paths.get(filePath), StandardCharsets.UTF_8)) {
+            stream.forEach(s -> contentBuilder.append(s).append("\n"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return contentBuilder.toString();
+    }
+
+    private String insert(String text) {
+        String insertText = "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\" type=\"text/javascript\"></script>\n" +
+                "<script type=\"text/javascript\">\n" +
+                "$(document).ready(function () {\n" +
+                "\n" +
+                "    window.onload = function () {\n" +
+                "        window.onscroll = function () {\n" +
+                "            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;\n" +
+                "            $.ajax({\n" +
+                "                url: \"/file\",\n" +
+                "                type: \"POST\",\n" +
+                "                data: {\n" +
+                "                    scrollTop: scrollTop\n" +
+                "                },\n" +
+                "                success: function () {\n" +
+                "                    return true;\n" +
+                "                }\n" +
+                "            })\n" +
+                "        };\n" +
+                "    };\n" +
+                "\n" +
+                "    setInterval(function () {\n" +
+                "        $.ajax({\n" +
+                "            url: \"/file/update_position\",\n" +
+                "            type: \"GET\",\n" +
+                "            success: function (data) {\n" +
+                "                window.scrollTo(0, data);\n" +
+                "            }\n" +
+                "        })\n" +
+                "    }, 1000);\n" +
+                "});\n" +
+                "</script>\n";
+        text = text.replace("</body>", insertText + "</body>");
+        return text;
+    }
+
+    private void writeToFile(String filePath, String text)
+            throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+        writer.write(text);
+        writer.close();
     }
 }

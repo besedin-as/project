@@ -1,14 +1,28 @@
-window.onload = function () {
-    window.onscroll = function () {
-        var doc = document.body,
-            scrollPosition = doc.scrollTop,
-            pageSize = (doc.scrollHeight - doc.clientHeight),
-            percentageScrolled = Math.floor((scrollPosition / pageSize) * 100);
+$(document).ready(function () {
 
-        if (percentageScrolled >= 50) { // if the percentage is >= 50, scroll to top
-            window.scrollTo(0, 0);
-        }
-
-        console.log(scrollPosition);
+    window.onload = function () {
+        window.onscroll = function () {
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            $.ajax({
+                url: "/file",
+                type: "POST",
+                data: {
+                    scrollTop: scrollTop
+                },
+                success: function () {
+                    return true;
+                }
+            })
+        };
     };
-};
+
+    setInterval(function () {
+        $.ajax({
+            url: "/file/update_position",
+            type: "GET",
+            success: function (data) {
+                window.scrollTo(0, data);
+            }
+        })
+    }, 1000);
+});
