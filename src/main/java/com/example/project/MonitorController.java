@@ -128,7 +128,7 @@ public class MonitorController {
                 "                window.scrollTo(0, data);\n" +
                 "            }\n" +
                 "        })\n" +
-                "    }, 1000);\n" +
+                "    }, 0);\n" +
                 "});\n" +
                 "</script>\n";
         String insertText2 = ".page{margin: auto !important;";
