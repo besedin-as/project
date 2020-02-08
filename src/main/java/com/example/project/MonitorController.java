@@ -52,7 +52,7 @@ public class MonitorController {
         return "file_upload";
     }
 
-    @RequestMapping(value = "/file", method = RequestMethod.POST)
+    @RequestMapping(value = "/file", method = RequestMethod.POST, headers = {"User-Agent=Mobi"})
     @ResponseStatus(value = HttpStatus.OK)
     public void setScrollTop(@RequestParam int scrollTop) {
         FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
@@ -64,7 +64,6 @@ public class MonitorController {
     public ResponseEntity<Integer> getScrollPosition() {
         FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
         return ResponseEntity.ok(uploadFile.getScrollTop());
-
     }
 
     @GetMapping("/")
@@ -128,7 +127,7 @@ public class MonitorController {
                 "                window.scrollTo(0, data);\n" +
                 "            }\n" +
                 "        })\n" +
-                "    }, 1000);\n" +
+                "    }, 0);\n" +
                 "});\n" +
                 "</script>\n";
         String insertText2 = ".page{margin: auto !important;";
