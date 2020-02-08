@@ -52,7 +52,7 @@ public class MonitorController {
         return "file_upload";
     }
 
-    @RequestMapping(value = "/file", method = RequestMethod.POST, headers = {"User-Agent=Mobi"})
+    @RequestMapping(value = "/file", method = RequestMethod.POST, headers = {"User-Agent='Mobi'"})
     @ResponseStatus(value = HttpStatus.OK)
     public void setScrollTop(@RequestParam int scrollTop) {
         FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
