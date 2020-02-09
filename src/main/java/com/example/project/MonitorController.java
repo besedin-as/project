@@ -54,13 +54,10 @@ public class MonitorController {
 
     @RequestMapping(value = "/file", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity<String> setScrollTop(@RequestParam int scrollTop, HttpServletRequest request) {
-        if (request.getHeader("User-Agent").contains("Mobi")) {
-            FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
-            uploadFile.setScrollTop(scrollTop);
-            filePositionRepo.save(uploadFile);
-        }
-        return ResponseEntity.ok(request.getHeader("User-Agent"));
+    public void setScrollTop(@RequestParam int scrollTop, HttpServletRequest request) {
+        FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
+        uploadFile.setScrollTop(scrollTop);
+        filePositionRepo.save(uploadFile);
     }
 
     @RequestMapping(value = "/file/update_position", method = RequestMethod.GET)
@@ -122,7 +119,7 @@ public class MonitorController {
                 "                    scrollTop: scrollTop\n" +
                 "                },\n" +
                 "                success: function (data) {\n" +
-                "                    console.log(data);\n" +
+                "                    return true;\n" +
                 "                }\n" +
                 "            })\n" +
                 "        };\n" +
@@ -136,7 +133,7 @@ public class MonitorController {
                 "                window.scrollTo(0, data);\n" +
                 "            }\n" +
                 "        })\n" +
-                "    }, 0);\n" +
+                "    }, 500);\n" +
                 "});\n" +
                 "</script>\n";
         String insertText2 = ".page{margin: auto !important;";
