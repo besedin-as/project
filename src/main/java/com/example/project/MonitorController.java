@@ -11,6 +11,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -53,10 +54,12 @@ public class MonitorController {
 
     @RequestMapping(value = "/file", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
-    public void setScrollTop(@RequestParam int scrollTop) {
-        FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
-        uploadFile.setScrollTop(scrollTop);
-        filePositionRepo.save(uploadFile);
+    public void setScrollTop(@RequestParam int scrollTop, HttpServletRequest request) {
+        if (request.getHeader("User-Agent").contains("Mobi")) {
+            FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
+            uploadFile.setScrollTop(scrollTop);
+            filePositionRepo.save(uploadFile);
+        }
     }
 
     @RequestMapping(value = "/file/update_position", method = RequestMethod.GET)
