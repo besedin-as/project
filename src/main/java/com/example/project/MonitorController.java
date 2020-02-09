@@ -38,11 +38,11 @@ public class MonitorController {
             e.printStackTrace();
         }
         FilePosition uploadFile = new FilePosition(0, 0);
-        filePositionRepo.save(uploadFile);
         generateHTMLFromPDF(fileNameAndPath.toString());
         String text = readLineByLineJava(templatesDirectory + "/test.html");
         text = insert(text);
         writeToFile(templatesDirectory + "/test.html", text);
+        filePositionRepo.save(uploadFile);
         return "redirect:/file";
     }
 
