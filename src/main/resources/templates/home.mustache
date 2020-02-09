@@ -13,5 +13,18 @@
             src="http://qrcoder.ru/code/?https%3A%2F%2Fdry-refuge-92990.herokuapp.com%2Fupload&6&0" width="246"
             height="246" border="0" title="QR код"></a></div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script>
+    setInterval(function () {
+            $.ajax({
+                url: "/is_file_downloaded",
+                type: "GET",
+                success: function (data) {
+                    if (typeof data === "boolean" && data === true) {
+                        window.location.replace("/file");
+                    }
+                }
+            })
+        }, 0);
+</script>
 </body>
 </html>

@@ -38,7 +38,6 @@ public class MonitorController {
             e.printStackTrace();
         }
         FilePosition uploadFile = new FilePosition(0, 0);
-        filePositionRepo.deleteAll();
         filePositionRepo.save(uploadFile);
         generateHTMLFromPDF(fileNameAndPath.toString());
         String text = readLineByLineJava(templatesDirectory + "/test.html");
@@ -52,7 +51,7 @@ public class MonitorController {
         return "file_upload";
     }
 
-    @RequestMapping(value = "/file", method = RequestMethod.POST, headers = {"User-Agent='Mobi'"})
+    @RequestMapping(value = "/file", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     public void setScrollTop(@RequestParam int scrollTop) {
         FilePosition uploadFile = filePositionRepo.findAll().iterator().next();
@@ -68,6 +67,7 @@ public class MonitorController {
 
     @GetMapping("/")
     public String home() {
+        filePositionRepo.deleteAll();
         return "home";
     }
 
@@ -79,6 +79,11 @@ public class MonitorController {
         header.set("Content-Disposition", "inline; filename=test.html");
         header.setContentLength(document.length);
         return new HttpEntity<byte[]>(document, header);
+    }
+
+    @RequestMapping(value = "/is_file_downloaded", method = RequestMethod.GET)
+    public ResponseEntity<Boolean> isFileDownloaded() {
+        return ResponseEntity.ok(filePositionRepo.findAll().iterator().hasNext());
     }
 
     private void generateHTMLFromPDF(String filename) throws IOException, ParserConfigurationException {
